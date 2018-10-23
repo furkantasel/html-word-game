@@ -1,0 +1,236 @@
+<html>
+	<head>
+		<script src="jquery.min.js"></script>
+
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="bootstrap.min.css">
+
+		<!-- Optional theme -->
+		<link rel="stylesheet" href="bootstrap-theme.min.css">
+
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="bootstrap.min.js"></script>
+
+		<script type="text/javascript">
+
+		 var currentQuestion = 0;
+		 var currentLetter = 0;
+		 var currentScore = 0;
+		 var currentQuestionScore =0;
+		 var openedLetterIndices = [];
+		 var openedLetters = [];
+
+		 var question_set = [ {question_number:1, question:"Star of the EARTH?", answer:"SUN", letters:3}, 
+							  {question_number:2, question:"Occupation", answer:"JOB", letters:3},
+							  {question_number:3, question:"Gossip", answer:"GRAPEWINE", letters:9},
+							];
+			$(document).ready( function()
+			
+			{
+
+				$("#mainDiv").hide();
+				$("#letterDiv").hide();
+				$("#guessDiv").hide();
+				$("#goDiv").hide();
+				$("#scoreDiv").hide();
+				
+				$("#goBtn").click(function(){nextWithAnswer($("#guess").val())});
+			});
+
+		function start()
+		{
+				$("#startDiv").hide();
+				$("#mainDiv").show();
+				$("#letterDiv").show();
+				$("#guessDiv").show();
+				$("#goDiv").show();
+				$("#scoreDiv").show();
+
+				currentQuestionScore = question_set[currentQuestion].letters*100;
+				$("#questionScore").html(currentQuestionScore); 
+				$("#score").html(currentScore); 
+				$("#question").html("<h1>"+question_set[currentQuestion].question+"</h1>");
+				//$("#goDiv").html("<span class='btn btn-success btn-md' id='goBtn' onclick='nextWithAnswer("+$("#guess").text()+")'>GO!</span>");
+				var buttons ="";
+				for (var i = 0; i < question_set[currentQuestion].letters; i++) {
+					buttons= buttons + "<span class='btn btn-primary btn-lg'>-</span>";
+				};
+				$("#letters").html(buttons);
+
+		}
+		
+		function giveLetter()
+		{
+			if(currentQuestionScore>0){
+				currentQuestionScore = currentQuestionScore - 100;
+				$("#questionScore").html(currentQuestionScore); 
+
+					var flag = true;
+					var indexToBeOpened;
+					while(flag)
+					{
+						indexToBeOpened = Math.floor(Math.random()*question_set[currentQuestion].letters);
+						flag = $.inArray(indexToBeOpened,openedLetterIndices)>=0;
+					}
+
+					openedLetters.push(question_set[currentQuestion].answer.substring(indexToBeOpened,indexToBeOpened+1));
+					openedLetterIndices.push(indexToBeOpened);
+					var buttons = "";
+					for (var i = 0; i < question_set[currentQuestion].letters; i++) {
+						if($.inArray(i,openedLetterIndices)>=0)
+						{
+							buttons= buttons + "<span class='btn btn-primary btn-lg'>"+question_set[currentQuestion].answer.substring(i,i+1)+"</span>";
+						}else
+						{
+							buttons= buttons + "<span class='btn btn-primary btn-lg'>-</span>";
+						}
+					};
+					$("#letters").html(buttons);
+
+					if(openedLetterIndices.length == question_set[currentQuestion].letters)
+					{
+						$("#next").html("<span class='btn btn-warning btn-lg' onclick='next()'>Next</span>"); 
+					}
+			}
+		}
+
+		function next()
+		{
+			if(currentQuestion!= question_set.length-1)
+			{
+				$("#next").html("");
+				currentQuestion+=1;
+				currentScore+= currentQuestionScore;
+				currentQuestionScore = question_set[currentQuestion].letters*100;
+				
+			 	currentLetter = 0;
+			 	openedLetterIndices = [];
+			 	openedLetters = [];
+
+				$("#questionScore").html(currentQuestionScore); 
+				$("#score").html(currentScore); 
+				$("#question").html("<h1>"+question_set[currentQuestion].question+"</h1>");
+
+				var buttons ="";
+				for (var i = 0; i < question_set[currentQuestion].letters; i++) {
+					buttons= buttons + "<span class='btn btn-primary btn-lg'>-</span>";
+				};
+				$("#letters").html(buttons);
+			}else
+			{
+				finale("");
+			}
+		}
+
+		function nextWithAnswer (answer) {
+
+			if(currentQuestion!= question_set.length-1)
+			{
+				if (answer.toLowerCase() === question_set[currentQuestion].answer.toLowerCase())
+				{
+					alert('Correct!');
+					currentQuestion+=1;
+					currentScore+= currentQuestionScore;
+					currentQuestionScore = question_set[currentQuestion].letters*100;
+					
+				 	currentLetter = 0;
+				 	openedLetterIndices = [];
+				 	openedLetters = [];
+
+					$("#questionScore").html(currentQuestionScore); 
+					$("#score").html(currentScore); 
+					$("#question").html("<h1>"+question_set[currentQuestion].question+"</h1>");
+
+					var buttons ="";
+					for (var i = 0; i < question_set[currentQuestion].letters; i++) {
+						buttons= buttons + "<span class='btn btn-primary btn-lg'>-</span>";
+					};
+					$("#letters").html(buttons);
+				}else
+				{
+					alert('False!');
+					currentQuestion+=1;
+					currentScore-= currentQuestionScore;
+					currentQuestionScore = question_set[currentQuestion].letters*100;
+					
+				 	currentLetter = 0;
+				 	openedLetterIndices = [];
+				 	openedLetters = [];
+
+					$("#questionScore").html(currentQuestionScore); 
+					$("#score").html(currentScore); 
+					$("#question").html("<h1>"+question_set[currentQuestion].question+"</h1>");
+
+					var buttons ="";
+					for (var i = 0; i < question_set[currentQuestion].letters; i++) {
+						buttons= buttons + "<span class='btn btn-primary btn-lg'>-</span>";
+					};
+					$("#letters").html(buttons);
+				}
+			}else
+			{
+				finale(answer);
+			}
+
+		}
+
+		function finale(answer)
+		{
+			$("#mainDiv").hide();
+			$("#letterDiv").hide();
+			$("#guessDiv").hide();
+			$("#goDiv").hide();
+			$("#scoreDiv").hide();
+			$("#startDiv").show();
+
+			if (answer.toLowerCase() === question_set[currentQuestion].answer.toLowerCase())
+			{
+				$("#startDiv").html("<div class='text-center'><h1>Your final score is "+(currentQuestionScore + currentScore)+"</h1><span class='btn btn-success btn-lg' onclick='location.reload()'>Replay</span></div>");
+			}else
+			{
+				$("#startDiv").html("<div class='text-center'><h1>Your final score is "+(currentScore-currentQuestionScore )+"</h1><span class='btn btn-success btn-lg' onclick='location.reload()'>Replay</span></div>");
+			}
+
+		}
+
+
+		</script>
+	</head>
+	<body>
+		<div class='row'>
+			<div class='jumbotron' id='startDiv'>
+				<div class='text-center'>
+					<h1>Push the button to START!</h1>
+					<span class='btn btn-success btn-lg' onclick='start()'>GO!</span>
+				</div>
+			</div>
+		</div>
+		<div class='row'>
+			<div class='jumbotron' id='mainDiv'>
+					<div class='text-center'>
+						<p>Question Score = <span id='questionScore'></span></p>
+						<span id='question'></span>
+						<span id='letters'></span><br><br>
+						<span id='next'></span>
+				  </div>
+			</div>
+		</div>
+		<div class='row'>
+		  <div class='col-md-2 col-md-offset-1' id='letterDiv'>
+		  		<span class='btn btn-danger btn-md' onclick="giveLetter()">Give me a letter</span>
+		  </div>
+		  <div class='col-md-4' id='guessDiv'>
+			  	<div class='input-group' >
+				  <span class='input-group-addon' >My guess is: </span>
+				  <input type='text' class='form-control' placeholder='Guess' id='guess'>
+				</div>
+		  </div>
+		  <div class='col-md-2' id='goDiv'>
+		  		<span class='btn btn-success btn-md' id="goBtn">GO!</span>
+		  </div>
+		  <div class='col-md-3' id='scoreDiv'>
+		  	Score: <span id='score'></span>
+		  </div>
+		</div>
+	</body>
+</html>
